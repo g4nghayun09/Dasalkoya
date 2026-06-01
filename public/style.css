@@ -1,0 +1,101 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container { max-width: 600px; margin: 0 auto; }
+
+header { text-align: center; color: white; margin-bottom: 24px; }
+header h1 { font-size: 2.2em; margin-bottom: 4px; }
+.subtitle { opacity: 0.85; font-size: 0.95em; }
+
+.spending-card {
+    background: white; border-radius: 16px; padding: 20px;
+    text-align: center; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.spending-card h3 { color: #666; font-size: 0.95em; margin-bottom: 8px; }
+.spending-card .amount { font-size: 1.8em; font-weight: bold; color: #11998e; }
+
+.add-section, .list-section {
+    background: white; border-radius: 16px; padding: 24px;
+    margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.add-section h2, .list-section h2 { font-size: 1.2em; margin-bottom: 16px; color: #333; }
+
+form input, form textarea {
+    width: 100%; padding: 12px 16px; margin-bottom: 10px;
+    border: 2px solid #e0e0e0; border-radius: 10px; font-size: 0.95em;
+    transition: border-color 0.2s;
+}
+form input:focus, form textarea:focus { outline: none; border-color: #11998e; }
+
+form button[type="button"] {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white; border: none; border-radius: 10px;
+    font-size: 1.05em; font-weight: 600; cursor: pointer;
+    transition: transform 0.1s;
+}
+form button[type="button"]:hover { transform: scale(1.02); }
+
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal {
+    background: white; border-radius: 20px; padding: 32px;
+    max-width: 400px; width: 90%; text-align: center;
+}
+.modal h2 { font-size: 1.4em; margin-bottom: 12px; color: #11998e; }
+.modal p { color: #555; margin-bottom: 6px; line-height: 1.5; }
+.modal .small { font-size: 0.85em; color: #999; }
+.modal-actions { margin-top: 20px; display: flex; gap: 10px; }
+.btn-confirm { flex: 1; padding: 12px; background: #11998e; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+.btn-confirm:hover { background: #0e7e74; }
+.btn-cancel { flex: 1; padding: 12px; background: #f0f0f0; color: #666; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+
+.confirm-section {
+    text-align: center; padding: 20px;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    border-radius: 12px; margin-bottom: 16px; color: white;
+}
+.confirm-section p { font-size: 1.05em; margin-bottom: 12px; font-weight: 600; }
+.confirm-btn { padding: 12px 32px; background: white; color: #11998e; border: none; border-radius: 10px; font-size: 1.05em; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
+.confirm-btn:hover { transform: scale(1.05); }
+
+.hint { font-size: 0.8em; color: #999; margin-bottom: 12px; }
+.item-list { display: flex; flex-direction: column; gap: 12px; }
+
+.item-card {
+    display: flex; align-items: center; gap: 14px; padding: 14px;
+    background: #f0faf4; border-radius: 12px;
+    border: 2px solid transparent; transition: all 0.2s;
+}
+.item-card:hover { border-color: #11998e; background: #e6f7ed; }
+
+.item-image {
+    width: 64px; height: 64px; border-radius: 10px; overflow: hidden;
+    flex-shrink: 0; background: #d4edda;
+    display: flex; align-items: center; justify-content: center;
+}
+.item-image img { width: 100%; height: 100%; object-fit: cover; }
+.item-image.placeholder span { font-size: 1.8em; }
+
+.item-info { flex: 1; min-width: 0; }
+.item-info h3 { font-size: 1em; margin-bottom: 4px; color: #333; }
+.item-info .price { font-weight: 600; color: #11998e; font-size: 0.95em; margin-bottom: 2px; }
+.item-info .reason { color: #888; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.delete-btn {
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: #e8f5e9; color: #11998e; font-size: 1.1em; cursor: pointer;
+    transition: all 0.2s; flex-shrink: 0;
+}
+.delete-btn:hover { background: #11998e; color: white; }
+
+.empty { text-align: center; padding: 40px 20px; color: #bbb; }

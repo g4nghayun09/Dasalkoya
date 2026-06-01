@@ -1,0 +1,13 @@
+{
+  "name": "dasalkoya",
+  "version": "1.0.0",
+  "description": "다살꼬야? - 현명한 소비 도우미",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql2": "^3.9.0"
+  }
+}
