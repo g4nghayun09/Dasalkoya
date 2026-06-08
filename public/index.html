@@ -4,55 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>다살꼬야?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🛍️ 다살꼬야?</h1>
-            <p class="subtitle">"이거 really 필요한거야?"</p>
-        </header>
 
-        <div class="spending-card">
-            <h3>이번 달 사용한 금액</h3>
-            <p class="amount" id="monthlySpending">0원</p>
-        </div>
-
-        <div class="add-section">
-            <h2>구매할 물건 등록</h2>
-            <form id="itemForm" onsubmit="return false;">
-                <input type="text" id="itemName" placeholder="물건 이름" required>
-                <input type="number" id="itemPrice" placeholder="가격" required min="0">
-                <input type="text" id="itemImage" placeholder="이미지 URL (선택)">
-                <textarea id="itemReason" placeholder="구매해야 하는 이유" required rows="3"></textarea>
-                <button type="button" onclick="showWarning()">등록하기</button>
-            </form>
-        </div>
-
-        <div id="warningModal" class="modal-overlay" style="display:none;">
-            <div class="modal">
-                <h2>⚠️ 잠깐만요!</h2>
-                <p>이 물건이 <strong>정말로</strong> 당신에게 필요한가요?</p>
-                <p class="small">하루만 더 생각해보는 건 어떨까요?</p>
-                <div class="modal-actions">
-                    <button class="btn-confirm" onclick="addItem()">네, 필요해요!</button>
-                    <button class="btn-cancel" onclick="closeModal()">다시 생각할게요</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="confirmSection" class="confirm-section" style="display:none;">
-            <p>🎉 최종 선택된 물건입니다! 구매를 확정하시겠습니까?</p>
-            <button onclick="confirmPurchase()" class="confirm-btn">✅ 구매 확정하기</button>
-        </div>
-
-        <div class="list-section">
-            <h2>고민 중인 물건들</h2>
-            <p class="hint">* 물건의 ✕ 버튼을 누르면 삭제됩니다 (마지막 1개까지)</p>
-            <div class="item-list" id="itemList"></div>
-        </div>
+<!-- ───────────── 메인 화면 ───────────── -->
+<div id="page-main" class="page active">
+    <div class="top-bar">
+        <span class="top-bar-title">다살꼬야 메인페이지</span>
     </div>
 
-    <script src="/main.js"></script>
+    <div class="card">
+        <!-- 상단: 사용 금액 + 프로필 아이콘 -->
+        <div class="spending-row">
+            <span class="spending-label">사용 금액 : <span id="monthlySpending">0</span>원</span>
+            <button class="icon-btn profile-btn" title="프로필">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <circle cx="14" cy="14" r="13" stroke="#4a7c59" stroke-width="2"/>
+                    <circle cx="14" cy="11" r="4.5" fill="#4a7c59"/>
+                    <path d="M5 23c0-4 4-7 9-7s9 3 9 7" stroke="#4a7c59" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- 아이템 리스트 -->
+        <div class="item-table" id="itemList">
+            <!-- JS로 렌더링 -->
+        </div>
+
+        <!-- + 추가 버튼 -->
+        <button class="add-row-btn" id="openAddModal">+</button>
+
+        <!-- 구매하기 버튼 -->
+        <button class="purchase-btn" id="openTournamentBtn">구매하기</button>
+    </div>
+</div>
+
+<!-- ───────────── 토너먼트 화면 ───────────── -->
+<div id="page-tournament" class="page">
+    <div class="top-bar">
+        <span class="top-bar-title">다살꼬야 메인페이지</span>
+    </div>
+
+    <div class="card">
+        <!-- 후보 카드들 -->
+        <div class="tournament-grid" id="tournamentGrid">
+            <!-- JS로 렌더링 -->
+        </div>
+
+        <p class="tournament-hint">한 달 뒤에도 떠오를 물건을 선택하세요. 중간에 나갈 수 없습니다.</p>
+
+        <!-- 최종 1개 남았을 때 -->
+        <div id="finalSection" style="display:none;">
+            <div class="final-card" id="finalCard"></div>
+            <p class="final-total">총 사용금액 : <span id="finalTotal">0</span>원</p>
+            <button class="back-btn" id="confirmPurchaseBtn">메인으로 돌아가기</button>
+        </div>
+    </div>
+</div>
+
+<!-- ───────────── 아이템 추가 모달 ───────────── -->
+<div id="addModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <h2 class="modal-title">물건 추가</h2>
+        <input type="text"   id="inputName"   class="modal-input" placeholder="물건 이름 *">
+        <input type="number" id="inputPrice"  class="modal-input" placeholder="가격 (원) *" min="0">
+        <input type="text"   id="inputImage"  class="modal-input" placeholder="이미지 URL (선택)">
+        <textarea            id="inputReason" class="modal-input modal-textarea" placeholder="구매 이유 *" rows="3"></textarea>
+        <div class="modal-actions">
+            <button class="modal-cancel" id="closeAddModal">취소</button>
+            <button class="modal-confirm" id="submitAddItem">⚠️ 정말 필요한가요? 추가하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- ───────────── 상세보기 모달 ───────────── -->
+<div id="detailModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <h2 class="modal-title" id="detailName">-</h2>
+        <p class="detail-price" id="detailPrice">-</p>
+        <div class="detail-img-wrap" id="detailImgWrap"></div>
+        <p class="detail-reason" id="detailReason">-</p>
+        <div class="modal-actions">
+            <button class="modal-cancel" id="closeDetailModal">닫기</button>
+            <button class="modal-confirm modal-delete" id="detailDeleteBtn">이 물건 탈락시키기</button>
+        </div>
+    </div>
+</div>
+
+<script src="/main.js"></script>
 </body>
 </html>

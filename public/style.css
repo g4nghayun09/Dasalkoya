@@ -1,101 +1,313 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* ── 리셋 & 기본 ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #d0d0d0;
     min-height: 100vh;
-    padding: 20px;
+    display: flex;
+    justify-content: center;
+    padding: 0;
 }
 
-.container { max-width: 600px; margin: 0 auto; }
+/* ── 페이지 전환 ── */
+.page { display: none; width: 100%; max-width: 430px; min-height: 100vh; flex-direction: column; background: #e8e8e8; }
+.page.active { display: flex; flex-direction: column; }
 
-header { text-align: center; color: white; margin-bottom: 24px; }
-header h1 { font-size: 2.2em; margin-bottom: 4px; }
-.subtitle { opacity: 0.85; font-size: 0.95em; }
-
-.spending-card {
-    background: white; border-radius: 16px; padding: 20px;
-    text-align: center; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+/* ── 상단 탑바 ── */
+.top-bar {
+    background: #b0b0b0;
+    padding: 10px 16px;
+    font-size: 0.78em;
+    color: #444;
+    letter-spacing: 0.02em;
 }
-.spending-card h3 { color: #666; font-size: 0.95em; margin-bottom: 8px; }
-.spending-card .amount { font-size: 1.8em; font-weight: bold; color: #11998e; }
 
-.add-section, .list-section {
-    background: white; border-radius: 16px; padding: 24px;
-    margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+/* ── 메인 카드 ── */
+.card {
+    background: #fff;
+    margin: 12px;
+    border-radius: 18px;
+    padding: 20px 18px 22px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
-.add-section h2, .list-section h2 { font-size: 1.2em; margin-bottom: 16px; color: #333; }
 
-form input, form textarea {
-    width: 100%; padding: 12px 16px; margin-bottom: 10px;
-    border: 2px solid #e0e0e0; border-radius: 10px; font-size: 0.95em;
-    transition: border-color 0.2s;
+/* ── 사용 금액 행 ── */
+.spending-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
 }
-form input:focus, form textarea:focus { outline: none; border-color: #11998e; }
-
-form button[type="button"] {
-    width: 100%; padding: 14px;
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    color: white; border: none; border-radius: 10px;
-    font-size: 1.05em; font-weight: 600; cursor: pointer;
-    transition: transform 0.1s;
+.spending-label {
+    font-size: 1.35em;
+    font-weight: 700;
+    color: #222;
 }
-form button[type="button"]:hover { transform: scale(1.02); }
 
-.modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.6);
-    display: flex; align-items: center; justify-content: center; z-index: 1000;
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: background 0.15s;
 }
-.modal {
-    background: white; border-radius: 20px; padding: 32px;
-    max-width: 400px; width: 90%; text-align: center;
+.icon-btn:hover { background: #e8f5e9; }
+
+/* ── 아이템 테이블 ── */
+.item-table {
+    background: #c8d9b0;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 12px;
 }
-.modal h2 { font-size: 1.4em; margin-bottom: 12px; color: #11998e; }
-.modal p { color: #555; margin-bottom: 6px; line-height: 1.5; }
-.modal .small { font-size: 0.85em; color: #999; }
-.modal-actions { margin-top: 20px; display: flex; gap: 10px; }
-.btn-confirm { flex: 1; padding: 12px; background: #11998e; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
-.btn-confirm:hover { background: #0e7e74; }
-.btn-cancel { flex: 1; padding: 12px; background: #f0f0f0; color: #666; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
 
-.confirm-section {
-    text-align: center; padding: 20px;
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    border-radius: 12px; margin-bottom: 16px; color: white;
+.item-row {
+    display: flex;
+    align-items: center;
+    padding: 13px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.4);
+    gap: 8px;
+    transition: background 0.15s;
 }
-.confirm-section p { font-size: 1.05em; margin-bottom: 12px; font-weight: 600; }
-.confirm-btn { padding: 12px 32px; background: white; color: #11998e; border: none; border-radius: 10px; font-size: 1.05em; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
-.confirm-btn:hover { transform: scale(1.05); }
+.item-row:last-child { border-bottom: none; }
+.item-row:hover { background: rgba(255,255,255,0.25); }
 
-.hint { font-size: 0.8em; color: #999; margin-bottom: 12px; }
-.item-list { display: flex; flex-direction: column; gap: 12px; }
-
-.item-card {
-    display: flex; align-items: center; gap: 14px; padding: 14px;
-    background: #f0faf4; border-radius: 12px;
-    border: 2px solid transparent; transition: all 0.2s;
+.item-row-name {
+    flex: 1;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: #2a2a2a;
 }
-.item-card:hover { border-color: #11998e; background: #e6f7ed; }
+.item-row-date {
+    font-size: 0.8em;
+    color: #555;
+    width: 70px;
+    text-align: center;
+}
+.item-row-price {
+    font-size: 0.88em;
+    font-weight: 600;
+    color: #2a2a2a;
+    width: 75px;
+    text-align: right;
+}
+.item-row-detail {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #4a7c59;
+    background: none;
+    color: #4a7c59;
+    font-size: 1.15em;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+}
+.item-row-detail:hover { background: #4a7c59; color: #fff; }
 
-.item-image {
-    width: 64px; height: 64px; border-radius: 10px; overflow: hidden;
-    flex-shrink: 0; background: #d4edda;
+.item-table-empty {
+    padding: 28px;
+    text-align: center;
+    color: #6a8c6a;
+    font-size: 0.9em;
+}
+
+/* ── + 추가 버튼 ── */
+.add-row-btn {
+    width: 100%;
+    padding: 13px;
+    background: #8aad72;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.5em;
+    font-weight: 300;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background 0.15s, transform 0.1s;
+}
+.add-row-btn:hover { background: #6f9a59; transform: scale(1.01); }
+
+/* ── 구매하기 버튼 ── */
+.purchase-btn {
+    width: 100%;
+    padding: 14px;
+    background: #4a7c59;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.15s, transform 0.1s;
+}
+.purchase-btn:hover { background: #355c42; transform: scale(1.01); }
+
+/* ── 토너먼트 화면 ── */
+.tournament-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+/* 후보 카드 1개일 때 중앙 정렬 */
+.tournament-grid.single { grid-template-columns: 1fr; max-width: 200px; margin: 0 auto 16px; }
+
+.t-card {
+    background: #c8d9b0;
+    border-radius: 14px;
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.18s;
+    border: 2px solid transparent;
+    position: relative;
+}
+.t-card:hover { border-color: #4a7c59; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(74,124,89,0.18); }
+
+.t-card-name { font-size: 1em; font-weight: 700; color: #222; margin-bottom: 4px; }
+.t-card-price { font-size: 0.9em; font-weight: 600; color: #4a7c59; margin-bottom: 6px; }
+.t-card-reason { font-size: 0.75em; color: #555; line-height: 1.4; }
+.t-card-img { width: 72px; height: 72px; object-fit: contain; border-radius: 8px; margin: 8px auto 0; display: block; }
+
+.t-card-delete {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.12);
+    color: #555;
+    font-size: 0.75em;
+    cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
 }
-.item-image img { width: 100%; height: 100%; object-fit: cover; }
-.item-image.placeholder span { font-size: 1.8em; }
+.t-card-delete:hover { background: #c0392b; color: #fff; }
 
-.item-info { flex: 1; min-width: 0; }
-.item-info h3 { font-size: 1em; margin-bottom: 4px; color: #333; }
-.item-info .price { font-weight: 600; color: #11998e; font-size: 0.95em; margin-bottom: 2px; }
-.item-info .reason { color: #888; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.delete-btn {
-    width: 36px; height: 36px; border-radius: 50%; border: none;
-    background: #e8f5e9; color: #11998e; font-size: 1.1em; cursor: pointer;
-    transition: all 0.2s; flex-shrink: 0;
+.tournament-hint {
+    font-size: 0.82em;
+    color: #555;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
 }
-.delete-btn:hover { background: #11998e; color: white; }
 
-.empty { text-align: center; padding: 40px 20px; color: #bbb; }
+/* ── 최종 확정 영역 ── */
+.final-card {
+    background: #c8d9b0;
+    border-radius: 14px;
+    padding: 24px 16px;
+    text-align: center;
+    margin-bottom: 12px;
+}
+.final-card-name  { font-size: 1.1em; font-weight: 700; color: #222; margin-bottom: 4px; }
+.final-card-price { font-size: 1em; font-weight: 600; color: #4a7c59; margin-bottom: 8px; }
+.final-card-reason { font-size: 0.8em; color: #555; margin-bottom: 12px; }
+.final-card-img { width: 120px; height: 120px; object-fit: contain; border-radius: 10px; margin: 0 auto; display: block; }
+.final-card-placeholder { font-size: 4em; }
+
+.final-total {
+    text-align: center;
+    font-size: 1em;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+.back-btn {
+    width: 100%;
+    padding: 14px;
+    background: #4a7c59;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+.back-btn:hover { background: #355c42; transform: scale(1.01); }
+
+/* ── 모달 공통 ── */
+.modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999;
+}
+
+.modal-box {
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px 24px;
+    width: 90%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: pop 0.2s ease;
+}
+
+@keyframes pop {
+    from { transform: scale(0.9); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+.modal-title { font-size: 1.15em; font-weight: 700; color: #222; }
+
+.modal-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #d0d0d0;
+    border-radius: 10px;
+    font-size: 0.92em;
+    font-family: inherit;
+    transition: border-color 0.15s;
+    resize: none;
+}
+.modal-input:focus { outline: none; border-color: #4a7c59; }
+.modal-textarea { min-height: 72px; }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 4px; }
+.modal-cancel {
+    flex: 1; padding: 12px;
+    background: #f0f0f0; color: #666;
+    border: none; border-radius: 10px;
+    font-size: 0.92em; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+.modal-cancel:hover { background: #e0e0e0; }
+
+.modal-confirm {
+    flex: 2; padding: 12px;
+    background: #4a7c59; color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 0.88em; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+.modal-confirm:hover { background: #355c42; }
+
+.modal-delete { background: #c0392b; }
+.modal-delete:hover { background: #962d22; }
+
+.detail-price  { font-size: 1.05em; font-weight: 700; color: #4a7c59; }
+.detail-reason { font-size: 0.88em; color: #555; line-height: 1.5; }
+.detail-img-wrap { text-align: center; }
+.detail-img-wrap img { max-width: 140px; max-height: 140px; border-radius: 10px; object-fit: contain; }
+.detail-img-wrap .no-img { font-size: 3.5em; }
