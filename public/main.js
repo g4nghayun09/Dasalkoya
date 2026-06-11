@@ -327,20 +327,41 @@ function renderHistory(history) {
     el.innerHTML = '<div class="profile-empty">아직 구매 내역이 없어요 🙂</div>';
     return;
   }
-  el.innerHTML = history.map(item => `
-    <div class="history-row">
-      <div class="history-thumb">
-        ${item.image_url
-          ? `<img src="${item.image_url}" alt="">`
-          : '📦'}
+
+  // 월별 그룹핑
+  const groups = {};
+  history.forEach(item => {
+    const d = new Date(item.created_at);
+    const key = `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+  });
+
+  el.innerHTML = Object.entries(groups).map(([month, items]) => {
+    const monthTotal = items.reduce((sum, i) => sum + Number(i.price), 0);
+    const rows = items.map(item => `
+      <div class="history-row">
+        <div class="history-thumb">
+          ${item.image_url ? `<img src="${item.image_url}" alt="">` : '📦'}
+        </div>
+        <div class="history-info">
+          <div class="history-name">${item.item_name}</div>
+          <div class="history-date">${fmtDate(item.created_at)}</div>
+        </div>
+        <div class="history-price">${fmt(item.price)}원</div>
       </div>
-      <div class="history-info">
-        <div class="history-name">${item.item_name}</div>
-        <div class="history-date">${fmtDate(item.updated_at || item.created_at)}</div>
+    `).join('');
+
+    return `
+      <div class="history-month-group">
+        <div class="history-month-header">
+          <span class="history-month-label">${month}</span>
+          <span class="history-month-total">${fmt(monthTotal)}원</span>
+        </div>
+        ${rows}
       </div>
-      <div class="history-price">${fmt(item.price)}원</div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function renderChart(monthlyData) {

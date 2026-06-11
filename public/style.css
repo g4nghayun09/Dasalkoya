@@ -555,3 +555,29 @@ body {
   color: var(--text-light);
   font-weight: 500;
 }
+
+/* ── 월별 구매 내역 그룹 ── */
+.history-month-group { margin-bottom: 6px; }
+.history-month-group:last-child { margin-bottom: 0; }
+
+.history-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0 8px;
+  border-bottom: 1.5px solid rgba(255,255,255,0.7);
+  margin-bottom: 2px;
+}
+
+.history-month-label {
+  font-size: 0.82em;
+  font-weight: 800;
+  color: var(--green-dark);
+  letter-spacing: 0.02em;
+}
+
+.history-month-total {
+  font-size: 0.82em;
+  font-weight: 700;
+  color: var(--text-mid);
+}
