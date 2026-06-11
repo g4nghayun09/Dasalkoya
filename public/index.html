@@ -1,98 +1,152 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>다살꼬야?</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>다살꼬야?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
-<!-- ───────────── 메인 화면 ───────────── -->
+<!-- ══════════════════════════════
+     메인 화면
+══════════════════════════════ -->
 <div id="page-main" class="page active">
-    <div class="top-bar">
-        <span class="top-bar-title">다살꼬야 메인페이지</span>
+  <div class="screen">
+    <div class="topbar"></div>
+
+    <div class="main-header">
+      <span class="spending-title">사용 금액 : <span id="monthlySpending">0</span>원</span>
+      <button class="profile-btn" id="openProfileBtn" title="프로필">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="8.5" r="3.8" stroke="#3d6b4f" stroke-width="1.8"/>
+          <path d="M3 20c0-4.4 3.6-7.5 8-7.5s8 3.1 8 7.5" stroke="#3d6b4f" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
 
-    <div class="card">
-        <!-- 상단: 사용 금액 + 프로필 아이콘 -->
-        <div class="spending-row">
-            <span class="spending-label">사용 금액 : <span id="monthlySpending">0</span>원</span>
-            <button class="icon-btn profile-btn" title="프로필">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                    <circle cx="14" cy="14" r="13" stroke="#4a7c59" stroke-width="2"/>
-                    <circle cx="14" cy="11" r="4.5" fill="#4a7c59"/>
-                    <path d="M5 23c0-4 4-7 9-7s9 3 9 7" stroke="#4a7c59" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </button>
-        </div>
-
-        <!-- 아이템 리스트 -->
-        <div class="item-table" id="itemList">
-            <!-- JS로 렌더링 -->
-        </div>
-
-        <!-- + 추가 버튼 -->
-        <button class="add-row-btn" id="openAddModal">+</button>
-
-        <!-- 구매하기 버튼 -->
-        <button class="purchase-btn" id="openTournamentBtn">구매하기</button>
+    <div class="items-card">
+      <div id="itemList"></div>
+      <div class="items-card-btns">
+        <button class="btn-add" id="openAddModal">+</button>
+        <button class="btn-purchase" id="openTournamentBtn">구매하기</button>
+      </div>
     </div>
+  </div>
 </div>
 
-<!-- ───────────── 토너먼트 화면 ───────────── -->
+<!-- ══════════════════════════════
+     토너먼트 화면
+══════════════════════════════ -->
 <div id="page-tournament" class="page">
-    <div class="top-bar">
-        <span class="top-bar-title">다살꼬야 메인페이지</span>
+  <div class="screen">
+    <div class="topbar">다살꼬야 메인페이지</div>
+
+    <!-- 후보 비교 영역 -->
+    <div class="tournament-wrap" id="tournamentWrap">
+      <div class="tournament-grid" id="tournamentGrid"></div>
+      <p class="tournament-hint">한 달 뒤에도 떠오를 물건을 선택하세요.<br>중간에 나갈 수 없습니다.</p>
     </div>
 
-    <div class="card">
-        <!-- 후보 카드들 -->
-        <div class="tournament-grid" id="tournamentGrid">
-            <!-- JS로 렌더링 -->
-        </div>
-
-        <p class="tournament-hint">한 달 뒤에도 떠오를 물건을 선택하세요. 중간에 나갈 수 없습니다.</p>
-
-        <!-- 최종 1개 남았을 때 -->
-        <div id="finalSection" style="display:none;">
-            <div class="final-card" id="finalCard"></div>
-            <p class="final-total">총 사용금액 : <span id="finalTotal">0</span>원</p>
-            <button class="back-btn" id="confirmPurchaseBtn">메인으로 돌아가기</button>
-        </div>
+    <!-- 최종 1개 영역 -->
+    <div class="final-wrap" id="finalWrap" style="display:none;">
+      <div class="final-card" id="finalCard"></div>
+      <button class="btn-back" id="confirmPurchaseBtn">메인으로 돌아가기</button>
     </div>
+  </div>
 </div>
 
-<!-- ───────────── 아이템 추가 모달 ───────────── -->
+<!-- ══════════════════════════════
+     모달: 아이템 추가
+══════════════════════════════ -->
 <div id="addModal" class="modal-overlay" style="display:none;">
-    <div class="modal-box">
-        <h2 class="modal-title">물건 추가</h2>
-        <input type="text"   id="inputName"   class="modal-input" placeholder="물건 이름 *">
-        <input type="number" id="inputPrice"  class="modal-input" placeholder="가격 (원) *" min="0">
-        <input type="text"   id="inputImage"  class="modal-input" placeholder="이미지 URL (선택)">
-        <textarea            id="inputReason" class="modal-input modal-textarea" placeholder="구매 이유 *" rows="3"></textarea>
-        <div class="modal-actions">
-            <button class="modal-cancel" id="closeAddModal">취소</button>
-            <button class="modal-confirm" id="submitAddItem">⚠️ 정말 필요한가요? 추가하기</button>
-        </div>
+  <div class="modal-box">
+    <p class="modal-title">물건 추가하기</p>
+    <input  type="text"   id="inputName"   class="modal-input" placeholder="물건 이름 *">
+    <input  type="number" id="inputPrice"  class="modal-input" placeholder="가격 (원) *" min="0">
+
+    <!-- 이미지 업로드 -->
+    <div class="img-upload-wrap">
+      <label class="img-upload-label" for="inputImage">
+        <span id="uploadLabelText">📷 사진 선택 (선택)</span>
+      </label>
+      <input type="file" id="inputImage" accept="image/*" style="display:none;">
+      <div id="imgPreview" class="img-preview" style="display:none;">
+        <img id="imgPreviewImg" src="" alt="미리보기">
+        <button type="button" class="img-remove-btn" id="removeImage">✕</button>
+      </div>
     </div>
+
+    <textarea             id="inputReason" class="modal-input modal-textarea" placeholder="구매 이유 *"></textarea>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel"  id="closeAddModal">취소</button>
+      <button class="modal-btn-confirm" id="submitAddItem">⚠️ 정말 필요해요!</button>
+    </div>
+  </div>
 </div>
 
-<!-- ───────────── 상세보기 모달 ───────────── -->
+<!-- ══════════════════════════════
+     모달: 상세보기
+══════════════════════════════ -->
 <div id="detailModal" class="modal-overlay" style="display:none;">
-    <div class="modal-box">
-        <h2 class="modal-title" id="detailName">-</h2>
-        <p class="detail-price" id="detailPrice">-</p>
-        <div class="detail-img-wrap" id="detailImgWrap"></div>
-        <p class="detail-reason" id="detailReason">-</p>
-        <div class="modal-actions">
-            <button class="modal-cancel" id="closeDetailModal">닫기</button>
-            <button class="modal-confirm modal-delete" id="detailDeleteBtn">이 물건 탈락시키기</button>
-        </div>
+  <div class="modal-box">
+    <p class="modal-title"  id="detailName">-</p>
+    <p class="detail-price" id="detailPrice">-</p>
+    <div id="detailImgWrap"></div>
+    <p class="detail-reason" id="detailReason">-</p>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="closeDetailModal">닫기</button>
+      <button class="modal-btn-danger" id="detailDeleteBtn">탈락시키기</button>
     </div>
+  </div>
 </div>
+
+<!-- ══════════════════════════════
+     마이페이지
+══════════════════════════════ -->
+<div id="page-profile" class="page">
+  <div class="screen">
+    <div class="topbar">다살꼬야 마이페이지</div>
+
+    <div class="main-header">
+      <span class="spending-title">마이페이지</span>
+      <button class="profile-btn" id="profileBackBtn" title="뒤로가기">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M13 4L7 10L13 16" stroke="#3d6b4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 이번 달 사용 금액 -->
+    <div class="profile-card" style="margin: 0 14px 14px;">
+      <div class="profile-card-label">이번 달 사용 금액</div>
+      <div class="profile-card-amount"><span id="profileSpending">0</span>원</div>
+    </div>
+
+    <!-- 월별 지출 그래프 -->
+    <div class="profile-card" style="margin: 0 14px 14px;">
+      <div class="profile-card-label" style="margin-bottom:14px;">월별 지출 추이</div>
+      <canvas id="spendingChart" height="130"></canvas>
+      <div id="chartEmpty" class="profile-empty" style="display:none;">아직 지출 데이터가 없어요</div>
+    </div>
+
+    <!-- 구매 완료 내역 -->
+    <div class="profile-card" style="margin: 0 14px 14px;">
+      <div class="profile-card-label" style="margin-bottom:10px;">구매 완료 내역</div>
+      <div id="historyList"></div>
+    </div>
+
+    <!-- 메인으로 -->
+    <div style="padding: 0 14px 20px;">
+      <button class="btn-back" id="profileBackBtn2">메인 창으로 돌아가기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
 
 <script src="/main.js"></script>
 </body>
