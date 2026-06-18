@@ -581,3 +581,40 @@ body {
   font-weight: 700;
   color: var(--text-mid);
 }
+
+/* ── 수정 아이콘 버튼 ── */
+.modal-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.modal-title-row .modal-title { margin-bottom: 0; flex: 1; }
+
+.icon-edit-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--green-pale);
+  font-size: 0.95em;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+.icon-edit-btn:hover { background: var(--green-light); transform: scale(1.08); }
+
+/* 토너먼트 카드 수정 아이콘 */
+.t-card-edit {
+  position: absolute;
+  top: 8px; left: 8px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.6);
+  font-size: 0.7em;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+}
+.t-card-edit:hover { background: var(--white); transform: scale(1.1); }

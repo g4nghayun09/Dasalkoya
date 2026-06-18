@@ -5,6 +5,8 @@
 let items = [];
 let detailTargetId = null;
 let selectedImageBase64 = null;
+let editTargetId = null;       // null이면 추가 모드, 값이 있으면 수정 모드
+let tournamentDeleted = [];    // 토너먼트 중 탈락시킨 아이템들 (뒤로가기 시 복구용)
 
 /* ── 유틸 ── */
 function fmt(n) { return Number(n).toLocaleString(); }
@@ -53,6 +55,15 @@ async function apiAdd(payload) {
   if (!res.ok) throw new Error('추가 실패');
 }
 
+async function apiUpdate(id, payload) {
+  const res = await fetch(`/api/items/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('수정 실패');
+}
+
 async function apiDelete(id) {
   const res = await fetch(`/api/items/${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error('삭제 실패');
@@ -83,12 +94,44 @@ function renderMain() {
 }
 
 /* ══════════════════════════════
-   모달: 아이템 추가
+   모달: 아이템 추가 / 수정 (같은 모달 재사용)
 ══════════════════════════════ */
 document.getElementById('openAddModal').addEventListener('click', () => {
+  editTargetId = null; // 추가 모드
+  document.getElementById('addModalTitle').textContent = '물건 추가하기';
+  document.getElementById('submitAddItem').textContent = '⚠️ 정말 필요해요!';
   document.getElementById('addModal').style.display = 'flex';
   document.getElementById('inputName').focus();
 });
+
+function openEditModal(id) {
+  const item = items.find(i => i.item_id === id);
+  if (!item) return;
+
+  editTargetId = id; // 수정 모드
+  document.getElementById('addModalTitle').textContent = '물건 수정하기';
+  document.getElementById('submitAddItem').textContent = '✏️ 수정 완료';
+
+  document.getElementById('inputName').value   = item.item_name;
+  document.getElementById('inputPrice').value  = item.price;
+  document.getElementById('inputReason').value = item.reason || '';
+
+  // 기존 이미지 미리보기 (수정 안 하면 그대로 유지)
+  if (item.image_url) {
+    selectedImageBase64 = item.image_url;
+    document.getElementById('imgPreviewImg').src = item.image_url;
+    document.getElementById('imgPreview').style.display = 'block';
+    document.getElementById('uploadLabelText').textContent = '✅ 기존 사진 사용 중';
+  } else {
+    selectedImageBase64 = null;
+    document.getElementById('imgPreview').style.display = 'none';
+    document.getElementById('uploadLabelText').textContent = '📷 사진 선택 (선택)';
+  }
+
+  // 상세 모달이 열려있었다면 닫고 추가/수정 모달 열기
+  document.getElementById('detailModal').style.display = 'none';
+  document.getElementById('addModal').style.display = 'flex';
+}
 
 document.getElementById('closeAddModal').addEventListener('click', closeAddModal);
 document.getElementById('addModal').addEventListener('click', e => {
@@ -129,6 +172,7 @@ function closeAddModal() {
   document.getElementById('addModal').style.display = 'none';
   ['inputName','inputPrice','inputReason'].forEach(id => document.getElementById(id).value = '');
   selectedImageBase64 = null;
+  editTargetId = null;
   document.getElementById('inputImage').value = '';
   document.getElementById('imgPreview').style.display = 'none';
   document.getElementById('uploadLabelText').textContent = '📷 사진 선택 (선택)';
@@ -144,14 +188,31 @@ document.getElementById('submitAddItem').addEventListener('click', async () => {
     return;
   }
 
+  const isEdit = editTargetId !== null;
+
   try {
-    await apiAdd({ item_name: name, price: parseInt(price), image_url: selectedImageBase64 || null, reason });
+    if (isEdit) {
+      await apiUpdate(editTargetId, {
+        item_name: name,
+        price: parseInt(price),
+        image_url: selectedImageBase64,   // 그대로 유지되거나 새로 바뀐 값
+        reason
+      });
+      showToast('✏️ 수정 완료!');
+    } else {
+      await apiAdd({ item_name: name, price: parseInt(price), image_url: selectedImageBase64 || null, reason });
+      showToast('✅ 후보에 추가됐어요!');
+    }
     closeAddModal();
     await loadItems();
     await loadSpending();
-    showToast('✅ 후보에 추가됐어요!');
+
+    // 토너먼트 화면에서 수정했다면 그 화면을 다시 그려준다
+    if (document.getElementById('page-tournament').classList.contains('active')) {
+      renderTournament();
+    }
   } catch {
-    showToast('❌ 추가 실패. 서버를 확인해주세요.');
+    showToast(isEdit ? '❌ 수정 실패. 서버를 확인해주세요.' : '❌ 추가 실패. 서버를 확인해주세요.');
   }
 });
 
@@ -178,6 +239,11 @@ document.getElementById('detailModal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeDetailModal();
 });
 
+document.getElementById('detailEditBtn').addEventListener('click', () => {
+  if (detailTargetId === null) return;
+  openEditModal(detailTargetId);
+});
+
 function closeDetailModal() {
   document.getElementById('detailModal').style.display = 'none';
   detailTargetId = null;
@@ -200,8 +266,38 @@ document.getElementById('detailDeleteBtn').addEventListener('click', async () =>
 ══════════════════════════════ */
 document.getElementById('openTournamentBtn').addEventListener('click', () => {
   if (!items.length) { showToast('먼저 물건을 추가해주세요!'); return; }
+  tournamentDeleted = []; // 새로 시작할 때 기록 초기화
   renderTournament();
   showPage('page-tournament');
+});
+
+/* ── 토너먼트 뒤로가기: 탈락시킨 것들 전부 복구 ── */
+document.getElementById('tournamentBackBtn').addEventListener('click', async () => {
+  if (tournamentDeleted.length === 0) {
+    // 탈락시킨 게 없으면 그냥 메인으로
+    showPage('page-main');
+    return;
+  }
+
+  if (!confirm('비교를 그만두고 메인으로 돌아갈까요?\n탈락시킨 물건들이 모두 복구됩니다.')) return;
+
+  try {
+    // 탈락시켰던 아이템들을 순서대로 다시 추가해서 복구
+    for (const item of tournamentDeleted) {
+      await apiAdd({
+        item_name: item.item_name,
+        price: item.price,
+        reason: item.reason,
+        image_url: item.image_url || null
+      });
+    }
+    tournamentDeleted = [];
+    await loadItems();
+    showToast('↩️ 모두 복구됐어요!');
+    showPage('page-main');
+  } catch {
+    showToast('❌ 복구 중 오류가 발생했어요.');
+  }
 });
 
 /* ══════════════════════════════
@@ -225,6 +321,7 @@ function renderTournament() {
 
   grid.innerHTML = items.map((item, i) => `
     <div class="t-card" style="animation-delay:${i * 0.06}s">
+      <button class="t-card-edit" onclick="tEdit(${item.item_id}, event)" title="수정">✏️</button>
       <button class="t-card-del" onclick="tDelete(${item.item_id}, event)">✕</button>
       <div class="t-card-name">${item.item_name}</div>
       <div class="t-card-price">${fmt(item.price)}원</div>
@@ -234,17 +331,26 @@ function renderTournament() {
   `).join('');
 }
 
+function tEdit(id, e) {
+  e.stopPropagation();
+  openEditModal(id);
+}
+
 async function tDelete(id, e) {
   e.stopPropagation();
   if (items.length === 1) { showToast('마지막 하나는 구매 확정만 가능해요!'); return; }
   const item = items.find(i => i.item_id === id);
   if (!confirm(`"${item.item_name}" 탈락시킬까요?`)) return;
   try {
+    tournamentDeleted.push({ ...item }); // 복구용으로 정보 저장
     await apiDelete(id);
     await loadItems();       // items 배열 갱신
     renderTournament();
     showToast('🗑️ 탈락!');
-  } catch { showToast('❌ 삭제 실패.'); }
+  } catch {
+    tournamentDeleted.pop(); // 실패 시 기록 롤백
+    showToast('❌ 삭제 실패.');
+  }
 }
 
 /* ── 최종 카드 ── */
@@ -272,6 +378,7 @@ document.getElementById('confirmPurchaseBtn').addEventListener('click', async ()
     await apiPurchase(last.item_id);
     await loadSpending();
     items = [];
+    tournamentDeleted = [];
     renderMain();
     showToast('🎉 구매 확정 완료! 잘 고민하셨어요 😊');
     setTimeout(() => showPage('page-main'), 500);

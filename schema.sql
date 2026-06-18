@@ -1,23 +1,29 @@
-CREATE DATABASE IF NOT EXISTS dasalkoya DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- DB 생성
+CREATE DATABASE IF NOT EXISTS dasalkoya CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE dasalkoya;
 
+-- 소비 후보 및 구매 내역 테이블
 CREATE TABLE IF NOT EXISTS purchase_item (
-    item_id INT AUTO_INCREMENT PRIMARY KEY,
-    item_name VARCHAR(200) NOT NULL,
-    price INT NOT NULL,
-    reason VARCHAR(1000) NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT '고민중',
-    created_at DATE NOT NULL DEFAULT (CURRENT_DATE),
-    image_url VARCHAR(500)
+    item_id     INT           NOT NULL AUTO_INCREMENT,
+    item_name   VARCHAR(100)  NOT NULL,
+    price       INT           NOT NULL,
+    reason      TEXT          NOT NULL,
+    image_url   LONGTEXT      NULL,
+    status      VARCHAR(20)   NOT NULL DEFAULT '고민중',
+    created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (item_id)
 );
 
+-- 월별 지출 통계 테이블
 CREATE TABLE IF NOT EXISTS monthly_spending (
-    spending_id INT AUTO_INCREMENT PRIMARY KEY,
-    year_month VARCHAR(7) NOT NULL UNIQUE,
-    total_amount INT NOT NULL DEFAULT 0
+    spending_id  INT          NOT NULL AUTO_INCREMENT,
+    ym           VARCHAR(7)   NOT NULL,
+    total_amount INT          NOT NULL DEFAULT 0,
+    PRIMARY KEY (spending_id),
+    UNIQUE KEY uq_ym (ym)
 );
 
-INSERT INTO purchase_item (item_name, price, reason, image_url) VALUES
-('LG 그램 노트북', 1000000, '게임을 해야한다.', NULL),
-('아이폰 16', 1500000, '지금 폰이 너무 오래됐다.', NULL),
-('나이키 운동화', 120000, '운동 시작해야지!', NULL);
+-- 이번 달 기본 데이터
+INSERT INTO monthly_spending (ym, total_amount) VALUES ('2026-06', 0)
+ON DUPLICATE KEY UPDATE total_amount = total_amount;
