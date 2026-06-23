@@ -79,18 +79,43 @@ async function apiPurchase(id) {
 ══════════════════════════════ */
 function renderMain() {
   const list = document.getElementById('itemList');
+  document.getElementById('itemCount').textContent = items.length + '개';
+
   if (!items.length) {
-    list.innerHTML = '<div class="items-empty">아직 추가된 물건이 없어요 🙂</div>';
+    list.innerHTML = '<div class="items-empty">아직 추가된 물건이 없어요</div>';
     return;
   }
   list.innerHTML = items.map(item => `
     <div class="item-row">
-      <span class="item-row-name">${item.item_name}</span>
-      <span class="item-row-date">${fmtDate(item.created_at)}</span>
-      <span class="item-row-price">${fmt(item.price)}원</span>
-      <button class="detail-btn" onclick="openDetail(${item.item_id})">+</button>
+      <div class="item-row-thumb">
+        ${item.image_url
+          ? `<img src="${item.image_url}" alt="">`
+          : '<i class="ti ti-package" style="font-size:17px;color:var(--green-600)"></i>'}
+      </div>
+      <div class="item-row-mid">
+        <div class="item-row-name">${item.item_name}</div>
+        <div class="item-row-date">${fmtDate(item.created_at)}</div>
+      </div>
+      <div class="item-row-price">${fmt(item.price)}원</div>
+      <div class="item-row-actions">
+        <button class="icon-mini-btn" onclick="openDetail(${item.item_id})" title="상세보기"><i class="ti ti-info-circle" style="font-size:16px"></i></button>
+        <button class="icon-mini-btn danger" onclick="quickDelete(${item.item_id})" title="바로 삭제"><i class="ti ti-trash" style="font-size:16px"></i></button>
+      </div>
     </div>
   `).join('');
+}
+
+async function quickDelete(id) {
+  const item = items.find(i => i.item_id === id);
+  if (!item) return;
+  if (!confirm(`"${item.item_name}"을(를) 삭제할까요?`)) return;
+  try {
+    await apiDelete(id);
+    await loadItems();
+    showToast('삭제됐어요');
+  } catch {
+    showToast('삭제 실패. 서버를 확인해주세요');
+  }
 }
 
 /* ══════════════════════════════
@@ -99,7 +124,7 @@ function renderMain() {
 document.getElementById('openAddModal').addEventListener('click', () => {
   editTargetId = null; // 추가 모드
   document.getElementById('addModalTitle').textContent = '물건 추가하기';
-  document.getElementById('submitAddItem').textContent = '⚠️ 정말 필요해요!';
+  document.getElementById('submitAddItem').textContent = '정말 필요해요!';
   document.getElementById('addModal').style.display = 'flex';
   document.getElementById('inputName').focus();
 });
@@ -110,7 +135,7 @@ function openEditModal(id) {
 
   editTargetId = id; // 수정 모드
   document.getElementById('addModalTitle').textContent = '물건 수정하기';
-  document.getElementById('submitAddItem').textContent = '✏️ 수정 완료';
+  document.getElementById('submitAddItem').textContent = '수정 완료';
 
   document.getElementById('inputName').value   = item.item_name;
   document.getElementById('inputPrice').value  = item.price;
@@ -121,11 +146,11 @@ function openEditModal(id) {
     selectedImageBase64 = item.image_url;
     document.getElementById('imgPreviewImg').src = item.image_url;
     document.getElementById('imgPreview').style.display = 'block';
-    document.getElementById('uploadLabelText').textContent = '✅ 기존 사진 사용 중';
+    document.getElementById('uploadLabelText').innerHTML = '<i class="ti ti-check" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>기존 사진 사용 중';
   } else {
     selectedImageBase64 = null;
     document.getElementById('imgPreview').style.display = 'none';
-    document.getElementById('uploadLabelText').textContent = '📷 사진 선택 (선택)';
+    document.getElementById('uploadLabelText').innerHTML = '<i class="ti ti-camera" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>사진 선택 (선택)';
   }
 
   // 상세 모달이 열려있었다면 닫고 추가/수정 모달 열기
@@ -155,7 +180,7 @@ document.getElementById('inputImage').addEventListener('change', (e) => {
     selectedImageBase64 = ev.target.result; // data:image/...;base64,...
     document.getElementById('imgPreviewImg').src = selectedImageBase64;
     document.getElementById('imgPreview').style.display = 'block';
-    document.getElementById('uploadLabelText').textContent = '✅ ' + file.name;
+    document.getElementById('uploadLabelText').innerHTML = `<i class="ti ti-check" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>${file.name}`;
   };
   reader.readAsDataURL(file);
 });
@@ -165,7 +190,7 @@ document.getElementById('removeImage').addEventListener('click', () => {
   selectedImageBase64 = null;
   document.getElementById('inputImage').value = '';
   document.getElementById('imgPreview').style.display = 'none';
-  document.getElementById('uploadLabelText').textContent = '📷 사진 선택 (선택)';
+  document.getElementById('uploadLabelText').innerHTML = '<i class="ti ti-camera" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>사진 선택 (선택)';
 });
 
 function closeAddModal() {
@@ -175,7 +200,7 @@ function closeAddModal() {
   editTargetId = null;
   document.getElementById('inputImage').value = '';
   document.getElementById('imgPreview').style.display = 'none';
-  document.getElementById('uploadLabelText').textContent = '📷 사진 선택 (선택)';
+  document.getElementById('uploadLabelText').innerHTML = '<i class="ti ti-camera" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>사진 선택 (선택)';
 }
 
 document.getElementById('submitAddItem').addEventListener('click', async () => {
@@ -198,10 +223,10 @@ document.getElementById('submitAddItem').addEventListener('click', async () => {
         image_url: selectedImageBase64,   // 그대로 유지되거나 새로 바뀐 값
         reason
       });
-      showToast('✏️ 수정 완료!');
+      showToast('수정 완료!');
     } else {
       await apiAdd({ item_name: name, price: parseInt(price), image_url: selectedImageBase64 || null, reason });
-      showToast('✅ 후보에 추가됐어요!');
+      showToast('후보에 추가됐어요!');
     }
     closeAddModal();
     await loadItems();
@@ -212,7 +237,7 @@ document.getElementById('submitAddItem').addEventListener('click', async () => {
       renderTournament();
     }
   } catch {
-    showToast(isEdit ? '❌ 수정 실패. 서버를 확인해주세요.' : '❌ 추가 실패. 서버를 확인해주세요.');
+    showToast(isEdit ? '수정 실패. 서버를 확인해주세요' : '추가 실패. 서버를 확인해주세요');
   }
 });
 
@@ -228,8 +253,8 @@ function openDetail(id) {
   document.getElementById('detailPrice').textContent = fmt(item.price) + '원';
   document.getElementById('detailReason').textContent = item.reason || '(이유 없음)';
   document.getElementById('detailImgWrap').innerHTML = item.image_url
-    ? `<img src="${item.image_url}" alt="상품 이미지" style="max-width:130px;max-height:130px;border-radius:10px;object-fit:contain;display:block;margin:0 auto;">`
-    : `<div class="detail-no-img">📦</div>`;
+    ? `<img src="${item.image_url}" alt="상품 이미지" style="max-width:130px;max-height:130px;border-radius:14px;object-fit:contain;display:block;margin:0 auto;">`
+    : `<div class="detail-no-img"><i class="ti ti-package" style="font-size:1em;color:var(--gray-200)"></i></div>`;
 
   document.getElementById('detailModal').style.display = 'flex';
 }
@@ -257,15 +282,15 @@ document.getElementById('detailDeleteBtn').addEventListener('click', async () =>
     await apiDelete(detailTargetId);
     closeDetailModal();
     await loadItems();
-    showToast('🗑️ 탈락!');
-  } catch { showToast('❌ 삭제 실패. 서버를 확인해주세요.'); }
+    showToast('탈락!');
+  } catch { showToast('삭제 실패. 서버를 확인해주세요'); }
 });
 
 /* ══════════════════════════════
    구매하기 → 토너먼트 시작
 ══════════════════════════════ */
 document.getElementById('openTournamentBtn').addEventListener('click', () => {
-  if (!items.length) { showToast('먼저 물건을 추가해주세요!'); return; }
+  if (!items.length) { showToast('먼저 물건을 추가해주세요'); return; }
   tournamentDeleted = []; // 새로 시작할 때 기록 초기화
   renderTournament();
   showPage('page-tournament');
@@ -293,10 +318,10 @@ document.getElementById('tournamentBackBtn').addEventListener('click', async () 
     }
     tournamentDeleted = [];
     await loadItems();
-    showToast('↩️ 모두 복구됐어요!');
+    showToast('모두 복구됐어요');
     showPage('page-main');
   } catch {
-    showToast('❌ 복구 중 오류가 발생했어요.');
+    showToast('복구 중 오류가 발생했어요');
   }
 });
 
@@ -321,12 +346,16 @@ function renderTournament() {
 
   grid.innerHTML = items.map((item, i) => `
     <div class="t-card" style="animation-delay:${i * 0.06}s">
-      <button class="t-card-edit" onclick="tEdit(${item.item_id}, event)" title="수정">✏️</button>
-      <button class="t-card-del" onclick="tDelete(${item.item_id}, event)">✕</button>
-      <div class="t-card-name">${item.item_name}</div>
+      <div class="t-card-top-actions">
+        <button class="t-card-icon-btn edit" onclick="tEdit(${item.item_id}, event)" title="수정"><i class="ti ti-pencil" style="font-size:12px"></i></button>
+        <button class="t-card-icon-btn danger" onclick="tDelete(${item.item_id}, event)" title="탈락"><i class="ti ti-trash" style="font-size:12px"></i></button>
+      </div>
+      ${item.image_url
+        ? `<img class="t-card-img" src="${item.image_url}" alt="">`
+        : `<i class="ti ti-package" style="font-size:46px;color:var(--green-300);margin-top:14px;display:block"></i>`}
+      <div class="t-card-name" style="margin-top:8px">${item.item_name}</div>
       <div class="t-card-price">${fmt(item.price)}원</div>
       <div class="t-card-reason">${item.reason || ''}</div>
-      ${item.image_url ? `<img class="t-card-img" src="${item.image_url}" alt="">` : ''}
     </div>
   `).join('');
 }
@@ -338,7 +367,7 @@ function tEdit(id, e) {
 
 async function tDelete(id, e) {
   e.stopPropagation();
-  if (items.length === 1) { showToast('마지막 하나는 구매 확정만 가능해요!'); return; }
+  if (items.length === 1) { showToast('마지막 하나는 구매 확정만 가능해요'); return; }
   const item = items.find(i => i.item_id === id);
   if (!confirm(`"${item.item_name}" 탈락시킬까요?`)) return;
   try {
@@ -346,10 +375,10 @@ async function tDelete(id, e) {
     await apiDelete(id);
     await loadItems();       // items 배열 갱신
     renderTournament();
-    showToast('🗑️ 탈락!');
+    showToast('탈락!');
   } catch {
     tournamentDeleted.pop(); // 실패 시 기록 롤백
-    showToast('❌ 삭제 실패.');
+    showToast('삭제 실패');
   }
 }
 
@@ -357,13 +386,14 @@ async function tDelete(id, e) {
 function renderFinal(item) {
   const spending = document.getElementById('monthlySpending').textContent;
   document.getElementById('finalCard').innerHTML = `
+    <span class="final-badge"><i class="ti ti-trophy" style="font-size:14px"></i> 최종 선택됨</span>
+    ${item.image_url
+      ? `<img class="final-img" src="${item.image_url}" alt="">`
+      : `<i class="ti ti-package" style="font-size:64px;color:var(--green-500);margin-bottom:16px;display:block"></i>`}
     <div class="final-name">${item.item_name}</div>
     <div class="final-price">${fmt(item.price)}원</div>
     <div class="final-reason">${item.reason || ''}</div>
-    ${item.image_url
-      ? `<img class="final-img" src="${item.image_url}" alt="">`
-      : `<div class="final-placeholder">📦</div>`}
-    <div class="final-total">총 사용금액 : ${spending}원</div>
+    <div class="final-total">총 사용금액 <span class="amt">${spending}원</span></div>
   `;
 }
 
@@ -380,10 +410,10 @@ document.getElementById('confirmPurchaseBtn').addEventListener('click', async ()
     items = [];
     tournamentDeleted = [];
     renderMain();
-    showToast('🎉 구매 확정 완료! 잘 고민하셨어요 😊');
+    showToast('구매 확정 완료! 잘 고민하셨어요');
     setTimeout(() => showPage('page-main'), 500);
   } catch {
-    showToast('❌ 구매 확정 실패. 서버를 확인해주세요.');
+    showToast('구매 확정 실패. 서버를 확인해주세요');
   }
 });
 
@@ -431,7 +461,7 @@ async function loadProfile() {
 function renderHistory(history) {
   const el = document.getElementById('historyList');
   if (!history.length) {
-    el.innerHTML = '<div class="profile-empty">아직 구매 내역이 없어요 🙂</div>';
+    el.innerHTML = '<div class="profile-empty">아직 구매 내역이 없어요</div>';
     return;
   }
 
@@ -449,7 +479,9 @@ function renderHistory(history) {
     const rows = items.map(item => `
       <div class="history-row">
         <div class="history-thumb">
-          ${item.image_url ? `<img src="${item.image_url}" alt="">` : '📦'}
+          ${item.image_url
+            ? `<img src="${item.image_url}" alt="">`
+            : '<i class="ti ti-package" style="font-size:16px;color:var(--green-600)"></i>'}
         </div>
         <div class="history-info">
           <div class="history-name">${item.item_name}</div>
@@ -502,8 +534,8 @@ function renderChart(monthlyData) {
 
   // 그라데이션 영역
   const grad = ctx.createLinearGradient(0, padT, 0, padT + gH);
-  grad.addColorStop(0, 'rgba(90,138,106,0.35)');
-  grad.addColorStop(1, 'rgba(90,138,106,0.02)');
+  grad.addColorStop(0, 'rgba(31,170,110,0.28)');
+  grad.addColorStop(1, 'rgba(31,170,110,0.02)');
 
   ctx.beginPath();
   ctx.moveTo(px(0), py(amounts[0]));
@@ -518,8 +550,8 @@ function renderChart(monthlyData) {
   ctx.beginPath();
   ctx.moveTo(px(0), py(amounts[0]));
   amounts.forEach((v, i) => { if (i > 0) ctx.lineTo(px(i), py(v)); });
-  ctx.strokeStyle = '#3d6b4f';
-  ctx.lineWidth = 2.2;
+  ctx.strokeStyle = '#1FAA6E';
+  ctx.lineWidth = 2.4;
   ctx.lineJoin = 'round';
   ctx.stroke();
 
@@ -527,11 +559,11 @@ function renderChart(monthlyData) {
   amounts.forEach((v, i) => {
     ctx.beginPath();
     ctx.arc(px(i), py(v), 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = '#3d6b4f';
+    ctx.fillStyle = '#0F8F5C';
     ctx.fill();
 
-    ctx.fillStyle = '#5a7a62';
-    ctx.font = '600 10px Noto Sans KR, sans-serif';
+    ctx.fillStyle = '#9AA8A1';
+    ctx.font = '600 10px Pretendard, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(labels[i] + '월', px(i), H - 8);
   });
